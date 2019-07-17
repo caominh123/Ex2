@@ -1,14 +1,10 @@
 'use strict';
 
 /**
- * Used for executing tasks concurrently
- *
- * enqueue function
+ * Used for executing tasks concurrently enqueue function
  * - Return a promise which will be executed
- *
  * @param {integer}   numConcurrentTasks   Number of concurrent tasks
  * @param {function}  getTask              Function will be called to enqueue task, will return any available task
- *
  * @return {object}
  */
 const run = async (numConcurrentTasks, getTask) => {
@@ -17,22 +13,27 @@ const run = async (numConcurrentTasks, getTask) => {
   // - At the first step: the task 1, 2, 3 must start immediately.
   // - If any task is done, the next task musts start immediately.
   // - After the last task starts, there must be no more queueing up
-  /*
-  await Promise.all([
-    getTask().then(getTask).then(getTask).then(getTask),
-    getTask().then(getTask).then(getTask),
-    getTask().then(getTask).then(getTask)
-  ]);*/
 
-  await Promise.all([
-    getTask().then(getTask).then(getTask).then(getTask),
-    getTask().then(getTask).then(getTask),
-    getTask().then(getTask).then(getTask)
-  ]);
 
+  let num = numConcurrentTasks;
+  //handle each task 
+  let a = async () => {
+    await getTask();
+    if (num > 0) {
+      num--;  
+      await a();
+      
+    }
+    
+  }
+  //run number task
+  let x = [];
+  for (let j = 1; j <= numConcurrentTasks; j++) {
+    x.push(a());
+  }
+  await Promise.all(x);
 
 }
-
 
 /**
  * This function is used to stimulate task processing time
@@ -51,7 +52,7 @@ const main = async () => {
 
   // Define 10 tasks, task i_th would take i*2 seconds to finish
   const tasks = [];
-  for (let i = 1; i <= 10; i++) {
+  for (let i = 1; i <= 15; i++) {
     const task = async () => {
       console.log(`Task ${i} started, done in ${i * 2}s`);
       await waitFor(i * 2000);
