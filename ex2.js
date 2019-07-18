@@ -13,27 +13,22 @@ const run = async (numConcurrentTasks, getTask) => {
   // - At the first step: the task 1, 2, 3 must start immediately.
   // - If any task is done, the next task musts start immediately.
   // - After the last task starts, there must be no more queueing up
-
-
-  let num = numConcurrentTasks;
-  //handle each task 
-  let a = async () => {
-    await getTask();
-    if (num > 0) {
-      num--;  
-      await a();
-      
+  let a = 0;
+  const interval_obj = setInterval(async () => {
+    try {
+      if (a < numConcurrentTasks) {
+        a++;
+        await getTask()().then(() => {
+          a--;
+        });
+      }
+    } catch (e) {
+      clearInterval(interval_obj);
     }
-    
-  }
-  //run number task
-  let x = [];
-  for (let j = 1; j <= numConcurrentTasks; j++) {
-    x.push(a());
-  }
-  await Promise.all(x);
-
+  }, 100);
 }
+
+
 
 /**
  * This function is used to stimulate task processing time
@@ -52,7 +47,7 @@ const main = async () => {
 
   // Define 10 tasks, task i_th would take i*2 seconds to finish
   const tasks = [];
-  for (let i = 1; i <= 15; i++) {
+  for (let i = 1; i <= 10; i++) {
     const task = async () => {
       console.log(`Task ${i} started, done in ${i * 2}s`);
       await waitFor(i * 2000);
@@ -67,7 +62,7 @@ const main = async () => {
     const task = tasks.shift();
     if (!task) return;
     // return the task for queueing
-    return task();
+    return task;
   });
 
   console.log(`DONE after ${Date.now() - startedAt}ms`)
