@@ -1,4 +1,4 @@
-'use strict';
+"use strict";
 
 /**
  * Used for executing tasks concurrently enqueue function
@@ -13,22 +13,22 @@ const run = async (numConcurrentTasks, getTask) => {
   // - At the first step: the task 1, 2, 3 must start immediately.
   // - If any task is done, the next task musts start immediately.
   // - After the last task starts, there must be no more queueing up
-  let a = 0;
-  const interval_obj = setInterval(async () => {
-    try {
-      if (a < numConcurrentTasks) {
-        a++;
-        await getTask()().then(() => {
-          a--;
-        });
+  return await new Promise(resolve => {
+    let a = 0;
+    const interval_obj = setInterval(async () => {
+      try {
+        if (a < numConcurrentTasks) {
+          a++;
+          await getTask()().then(() => {
+            a--;
+          });
+        }
+      } catch (e) {
+        clearInterval(interval_obj);
       }
-    } catch (e) {
-      clearInterval(interval_obj);
-    }
-  }, 100);
-}
-
-
+    }, 100);
+  });
+};
 
 /**
  * This function is used to stimulate task processing time
@@ -55,7 +55,7 @@ const main = async () => {
     };
     tasks.push(task);
   }
-  console.log('Processing 3 tasks concurrently');
+  console.log("Processing 3 tasks concurrently");
   // Run 3 tasks concurrently
   await run(3, () => {
     // Shift one task from the list, this task should be queued up for processing
@@ -65,7 +65,7 @@ const main = async () => {
     return task;
   });
 
-  console.log(`DONE after ${Date.now() - startedAt}ms`)
+  console.log(`DONE after ${Date.now() - startedAt}ms`);
 };
 
 main().catch(e => console.log(e.stack));
